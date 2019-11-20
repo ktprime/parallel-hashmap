@@ -21,9 +21,11 @@ This repository aims to provide an set of excellent hash map implementations, wi
 
 - Easy to **forward declare**: just include `phmap_fwd_decl.h` in your header files to forward declare Parallel Hashmap containers. 
 
+- **Dump/load** feature: when a hash map stores data that is `std::trivially_copyable`, the table can be dumped to disk and restored as a single array, very efficiently, and without requiring any hash computation. This is typically about 10 times faster than doing element-wise serialization to disk, but it will use 10% to 60% extra disk space. See `examples/serialize.cc`.
+
 - **Tested** on Windows (vs2015 & vs2017, vs2019, Intel compiler 18 and 19), linux (g++ 4.8.4, 5, 6, 7, 8, clang++ 3.9, 4.0, 5.0) and MacOS (g++ and clang++) - click on travis and appveyor icons above for detailed test status.
 
-- Automatic support for **boost's hash_value()** method for providing the hash function (see `examples/hash_value.h`).
+- Automatic support for **boost's hash_value()** method for providing the hash function (see `examples/hash_value.h`). Also default hash support for `std::pair` and `std::tuple`.
 
 - **natvis** visualization support in Visual Studio.
 
@@ -105,7 +107,7 @@ The full types with template parameters can be found in the [parallel_hashmap/ph
 
 ## Changes to Abseil's hashmaps
 
-- The default hash framework is std::hash, not absl::Hash. However, if you prefer the default to be the Abseil hash framework, include the Abseil headers before `phmap.h` and define the preprocessor macro `PHMAP_USE_ABSL_HASHEQ`.
+- The default hash framework is std::hash, not absl::Hash. However, if you prefer the default to be the Abseil hash framework, include the Abseil headers before `phmap.h` and define the preprocessor macro `PHMAP_USE_ABSL_HASH`.
 
 - The `erase(iterator)` and `erase(const_iterator)` both return an iterator to the element following the removed element, as does the std::unordered_map. A non-standard `void _erase(iterator)` is provided in case the return value is not needed.
 
@@ -253,7 +255,7 @@ Parallel Hashmap containers follow the thread safety rules of the Standard C++ l
 
 - It is safe to read and write to one instance of a type even if another thread is reading or writing to a different instance of the same type. For example, given hash tables A and B of the same type, it is safe if A is being written in thread 1 and B is being read in thread 2.
 
-- The *parallel* tables can be made internally thread-safe, by providing a synchronization type (for example [std::mutex](https://en.cppreference.com/w/cpp/thread/mutex)) as the last template argument. Because locking is performed at the *submap* level, a high level of concurrency can still be achieved. However please be aware that returned iterators are not protected by the mutex, so they cannot be used reliably on a hash map which can be changed by another thread.
+- The *parallel* tables can be made internally thread-safe for concurrent write access, by providing a synchronization type (for example [std::mutex](https://en.cppreference.com/w/cpp/thread/mutex)) as the last template argument. Because locking is performed at the *submap* level, a high level of concurrency can still be achieved. However please be aware that returned iterators are not protected by the mutex, so they cannot be used reliably on a hash map which can be changed by another thread. Again, the internal synchronization does not allow to retrieve data from a table that is being modified in another thread.
 
 - Examples on how to use various mutex types, including boost::mutex, boost::shared_mutex and absl::Mutex can be found in `examples/bench.cc`
 

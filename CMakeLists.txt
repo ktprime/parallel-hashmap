@@ -17,6 +17,7 @@ set(CMAKE_SUPPRESS_REGENERATION true)            ## suppress ZERO_CHECK project
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 include(helpers)
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
 add_library(${PROJECT_NAME} INTERFACE)
 
@@ -110,6 +111,10 @@ if (PHMAP_BUILD_TESTS)
     phmap_cc_test(NAME parallel_flat_hash_map_mutex SRCS "tests/parallel_flat_hash_map_mutex_test.cc"
                   COPTS "-DUNORDERED_MAP_CXX17" DEPS gmock_main)
 
+    phmap_cc_test(NAME dump_load SRCS "tests/dump_load_test.cc"
+                   COPTS "-DUNORDERED_MAP_CXX17" DEPS gmock_main)
+
+
 endif()
 
 if (PHMAP_BUILD_EXAMPLES)
@@ -124,12 +129,14 @@ if (PHMAP_BUILD_EXAMPLES)
     add_executable(ex_basic examples/basic.cc phmap.natvis)
     add_executable(ex_bench examples/bench.cc phmap.natvis)
     add_executable(ex_emplace examples/emplace.cc phmap.natvis)
-    # add_executable(ex_serialize examples/serialize.cc phmap.natvis)
+    add_executable(ex_serialize examples/serialize.cc phmap.natvis)
     add_executable(ex_hash_std examples/hash_std.cc phmap.natvis)
     add_executable(ex_hash_value examples/hash_value.cc phmap.natvis)
     add_executable(ex_two_files examples/f1.cc examples/f2.cc phmap.natvis)
     add_executable(ex_insert_bench examples/insert_bench.cc phmap.natvis)
     add_executable(ex_knucleotide examples/knucleotide.cc phmap.natvis)
+    add_executable(ex_dump_load examples/dump_load.cc phmap.natvis)
+
     target_link_libraries(ex_knucleotide Threads::Threads)
     target_link_libraries(ex_bench Threads::Threads)
 endif()
